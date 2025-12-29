@@ -207,6 +207,110 @@
             transform: rotate(180deg);
         }
         
+        /* Advanced Filter Styles */
+        .advanced-filters {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .filters-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+            font-size: 1.2rem;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .filter-input, .filter-select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background-color: white;
+        }
+        
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+        }
+        
+        .filter-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dark-color);
+        }
+        
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: var(--text-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #b71c1c;
+        }
+        
         .table-controls {
             display: flex;
             justify-content: space-between;
@@ -336,13 +440,22 @@
                 gap: 20px;
             }
             
-            .table-controls {
+            .table-controls, .filter-actions {
                 flex-direction: column;
                 align-items: stretch;
             }
             
-            .table-search {
+            .table-search, .filter-buttons {
                 max-width: 100%;
+                width: 100%;
+            }
+            
+            .filter-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                justify-content: center;
             }
         }
         
@@ -458,6 +571,41 @@
         input:checked + .toggle-slider:before {
             transform: translateX(26px);
         }
+        
+        /* Badges for item types */
+        .item-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        .badge-expense {
+            background-color: rgba(211, 47, 47, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .badge-revenue {
+            background-color: rgba(2, 136, 209, 0.1);
+            color: var(--info-color);
+        }
+        
+        .badge-other {
+            background-color: rgba(245, 124, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        /* Date badges */
+        .date-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -483,7 +631,7 @@
         <div class="farm-tabs">
             <div class="farm-tab active" data-farm="both">
                 <i class="fas fa-chart-pie"></i>
-                <h3>نظرة عامة على مزرعه الخلايق و العناديه لشهر أكتوبر - نوفمبر</h3>
+                <h3>نظرة عامة على المزارع</h3>
             </div>
         </div>
         
@@ -614,6 +762,75 @@
         
         <!-- Detailed Analysis Section (Initially Hidden) -->
         <div id="detailedAnalysis" style="display: none;">
+            <!-- Advanced Filters -->
+            <div class="advanced-filters">
+                <div class="filters-title">
+                    <i class="fas fa-filter"></i>
+                    <h3>فلاتر البحث المتقدمة</h3>
+                </div>
+                
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label">نوع البند</label>
+                        <select class="filter-select" id="filterItemType">
+                            <option value="all">جميع الأنواع</option>
+                            <option value="expense">المصروفات فقط</option>
+                            <option value="revenue">الإيرادات فقط</option>
+                            <option value="other">أخرى</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">اسم البند</label>
+                        <input type="text" class="filter-input" id="filterItemName" placeholder="ابحث باسم البند...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">التاريخ من</label>
+                        <input type="date" class="filter-input" id="filterDateFrom">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">التاريخ إلى</label>
+                        <input type="date" class="filter-input" id="filterDateTo">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">المزرعة</label>
+                        <select class="filter-select" id="filterFarm">
+                            <option value="all">كل المزارع</option>
+                            <option value="al-anadiyah">العنادية</option>
+                            <option value="al-khalaik">الخلايق</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">المبلغ من</label>
+                        <input type="number" class="filter-input" id="filterAmountFrom" placeholder="0 ر.س">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">المبلغ إلى</label>
+                        <input type="number" class="filter-input" id="filterAmountTo" placeholder="100000 ر.س">
+                    </div>
+                </div>
+                
+                <div class="filter-actions">
+                    <div class="filter-buttons">
+                        <button class="btn btn-primary" id="applyFilters">
+                            <i class="fas fa-search"></i> تطبيق الفلاتر
+                        </button>
+                        <button class="btn btn-secondary" id="resetFilters">
+                            <i class="fas fa-redo"></i> إعادة التعيين
+                        </button>
+                    </div>
+                    
+                    <div class="rows-counter">
+                        عرض <span id="filteredRowsCount">0</span> من <span id="totalRowsCount">0</span> صف
+                    </div>
+                </div>
+            </div>
+            
             <!-- Charts and Detailed Analysis -->
             <div class="dashboard-grid">
                 <!-- Revenue Breakdown -->
@@ -678,7 +895,7 @@
                 <div class="card-body">
                     <div class="table-controls">
                         <div class="table-search">
-                            <input type="text" id="expenseSearch" placeholder="بحث في المصروفات...">
+                            <input type="text" id="expenseSearch" placeholder="بحث سريع في المصروفات...">
                         </div>
                         <div class="rows-counter">
                             عرض <span id="expenseRowsCount">6</span> من 6 صفوف
@@ -700,44 +917,119 @@
                                     <th class="sortable-header" data-column="3" data-sort="none">
                                         <i class="fas fa-sort"></i> الإجمالي (ر.س)
                                     </th>
+                                    <th class="sortable-header" data-column="4" data-sort="none">
+                                        <i class="fas fa-sort"></i> التاريخ
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td><strong>الأعلاف والبرسيم</strong></td>
+                                <tr data-item-type="expense" data-farm="al-anadiyah" data-date="2025-10-05" data-amount="21775">
+                                    <td>
+                                        <span class="item-type-badge badge-expense">مصروف</span>
+                                        <strong>الأعلاف والبرسيم</strong>
+                                    </td>
                                     <td data-sort-value="21775">21,775 ر.س</td>
+                                    <td data-sort-value="0">-</td>
+                                    <td data-sort-value="21775">21,775 ر.س</td>
+                                    <td>
+                                        <span class="date-badge">05-10-2025</span>
+                                    </td>
+                                </tr>
+                                <tr data-item-type="expense" data-farm="al-khalaik" data-date="2025-10-10" data-amount="58410">
+                                    <td>
+                                        <span class="item-type-badge badge-expense">مصروف</span>
+                                        <strong>الأعلاف والبرسيم</strong>
+                                    </td>
+                                    <td data-sort-value="0">-</td>
                                     <td data-sort-value="58410">58,410 ر.س</td>
-                                    <td data-sort-value="80185">80,185 ر.س</td>
+                                    <td data-sort-value="58410">58,410 ر.س</td>
+                                    <td>
+                                        <span class="date-badge">10-10-2025</span>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td>الرواتب والأجور</td>
+                                <tr data-item-type="expense" data-farm="al-anadiyah" data-date="2025-10-15" data-amount="5300">
+                                    <td>
+                                        <span class="item-type-badge badge-expense">مصروف</span>
+                                        الرواتب والأجور
+                                    </td>
                                     <td data-sort-value="5300">5,300 ر.س</td>
+                                    <td data-sort-value="0">-</td>
+                                    <td data-sort-value="5300">5,300 ر.س</td>
+                                    <td>
+                                        <span class="date-badge">15-10-2025</span>
+                                    </td>
+                                </tr>
+                                <tr data-item-type="expense" data-farm="al-khalaik" data-date="2025-10-20" data-amount="2800">
+                                    <td>
+                                        <span class="item-type-badge badge-expense">مصروف</span>
+                                        الرواتب والأجور
+                                    </td>
+                                    <td data-sort-value="0">-</td>
                                     <td data-sort-value="2800">2,800 ر.س</td>
-                                    <td data-sort-value="8100">8,100 ر.س</td>
+                                    <td data-sort-value="2800">2,800 ر.س</td>
+                                    <td>
+                                        <span class="date-badge">20-10-2025</span>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td>قطع الغيار والصيانة</td>
+                                <tr data-item-type="expense" data-farm="al-anadiyah" data-date="2025-10-25" data-amount="57158">
+                                    <td>
+                                        <span class="item-type-badge badge-expense">مصروف</span>
+                                        قطع الغيار والصيانة
+                                    </td>
                                     <td data-sort-value="57158">57,158 ر.س</td>
+                                    <td data-sort-value="0">-</td>
+                                    <td data-sort-value="57158">57,158 ر.س</td>
+                                    <td>
+                                        <span class="date-badge">25-10-2025</span>
+                                    </td>
+                                </tr>
+                                <tr data-item-type="expense" data-farm="al-khalaik" data-date="2025-11-01" data-amount="4508">
+                                    <td>
+                                        <span class="item-type-badge badge-expense">مصروف</span>
+                                        قطع الغيار والصيانة
+                                    </td>
+                                    <td data-sort-value="0">-</td>
                                     <td data-sort-value="4508">4,508 ر.س</td>
-                                    <td data-sort-value="61666">61,666 ر.س</td>
+                                    <td data-sort-value="4508">4,508 ر.س</td>
+                                    <td>
+                                        <span class="date-badge">01-11-2025</span>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td>الكهرباء والسباكة</td>
-                                    <td data-sort-value="7148">7,148 ر.س</td>
-                                    <td data-sort-value="7241">7,241 ر.س</td>
-                                    <td data-sort-value="14389">14,389 ر.س</td>
+                                <tr data-item-type="revenue" data-farm="al-anadiyah" data-date="2025-11-05" data-amount="149000">
+                                    <td>
+                                        <span class="item-type-badge badge-revenue">إيراد</span>
+                                        إيراد الأغنام
+                                    </td>
+                                    <td data-sort-value="149000">149,000 ر.س</td>
+                                    <td data-sort-value="0">-</td>
+                                    <td data-sort-value="149000">149,000 ر.س</td>
+                                    <td>
+                                        <span class="date-badge">05-11-2025</span>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td>المحروقات والزيوت</td>
-                                    <td data-sort-value="780">780 ر.س</td>
-                                    <td data-sort-value="4765">4,765 ر.س</td>
-                                    <td data-sort-value="5545">5,545 ر.س</td>
+                                <tr data-item-type="revenue" data-farm="al-anadiyah" data-date="2025-11-10" data-amount="50000">
+                                    <td>
+                                        <span class="item-type-badge badge-revenue">إيراد</span>
+                                        إيراد بيع غزلان
+                                    </td>
+                                    <td data-sort-value="50000">50,000 ر.س</td>
+                                    <td data-sort-value="0">-</td>
+                                    <td data-sort-value="50000">50,000 ر.س</td>
+                                    <td>
+                                        <span class="date-badge">10-11-2025</span>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td>التموينات والإعاشة</td>
-                                    <td data-sort-value="1006">1,006 ر.س</td>
-                                    <td data-sort-value="5985">5,985 ر.س</td>
-                                    <td data-sort-value="6991">6,991 ر.س</td>
+                                <tr data-item-type="other" data-farm="al-anadiyah" data-date="2025-11-12" data-amount="53584">
+                                    <td>
+                                        <span class="item-type-badge badge-other">أخرى</span>
+                                        غطاس 4 بوصة
+                                    </td>
+                                    <td data-sort-value="53584">53,584 ر.س</td>
+                                    <td data-sort-value="0">-</td>
+                                    <td data-sort-value="53584">53,584 ر.س</td>
+                                    <td>
+                                        <span class="date-badge">12-11-2025</span>
+                                    </td>
                                 </tr>
                             </tbody>
                             <tfoot>
@@ -746,6 +1038,7 @@
                                     <td>163,915 ر.س</td>
                                     <td>86,965 ر.س</td>
                                     <td>250,880 ر.س</td>
+                                    <td></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -783,23 +1076,35 @@
                                         <th class="sortable-header" data-column="2" data-sort="none">
                                             <i class="fas fa-sort"></i> النسبة
                                         </th>
+                                        <th class="sortable-header" data-column="3" data-sort="none">
+                                            <i class="fas fa-sort"></i> التاريخ
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    <tr data-item-type="other" data-date="2025-11-12" data-amount="53584">
                                         <td>غطاس 4 بوصة</td>
                                         <td data-sort-value="53584">53,584 ر.س</td>
                                         <td data-sort-value="32.7">32.7%</td>
+                                        <td>
+                                            <span class="date-badge">12-11-2025</span>
+                                        </td>
                                     </tr>
-                                    <tr>
+                                    <tr data-item-type="other" data-date="2025-10-25" data-amount="45000">
                                         <td>إصلاح خزان الماء</td>
                                         <td data-sort-value="45000">45,000 ر.س</td>
                                         <td data-sort-value="27.5">27.5%</td>
+                                        <td>
+                                            <span class="date-badge">25-10-2025</span>
+                                        </td>
                                     </tr>
-                                    <tr>
+                                    <tr data-item-type="expense" data-date="2025-10-25" data-amount="57158">
                                         <td>قطع غيار وصيانة</td>
                                         <td data-sort-value="57158">57,158 ر.س</td>
                                         <td data-sort-value="34.9">34.9%</td>
+                                        <td>
+                                            <span class="date-badge">25-10-2025</span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -835,23 +1140,35 @@
                                         <th class="sortable-header" data-column="2" data-sort="none">
                                             <i class="fas fa-sort"></i> النسبة
                                         </th>
+                                        <th class="sortable-header" data-column="3" data-sort="none">
+                                            <i class="fas fa-sort"></i> التاريخ
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    <tr data-item-type="expense" data-date="2025-10-10" data-amount="51600">
                                         <td>الشعير والسماد</td>
                                         <td data-sort-value="51600">51,600 ر.س</td>
                                         <td data-sort-value="59.3">59.3%</td>
+                                        <td>
+                                            <span class="date-badge">10-10-2025</span>
+                                        </td>
                                     </tr>
-                                    <tr>
+                                    <tr data-item-type="expense" data-date="2025-11-01" data-amount="7241">
                                         <td>الكهرباء والسباكة</td>
                                         <td data-sort-value="7241">7,241 ر.س</td>
                                         <td data-sort-value="8.3">8.3%</td>
+                                        <td>
+                                            <span class="date-badge">01-11-2025</span>
+                                        </td>
                                     </tr>
-                                    <tr>
+                                    <tr data-item-type="expense" data-date="2025-10-20" data-amount="5985">
                                         <td>التموينات والإعاشة</td>
                                         <td data-sort-value="5985">5,985 ر.س</td>
                                         <td data-sort-value="6.9">6.9%</td>
+                                        <td>
+                                            <span class="date-badge">20-10-2025</span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -926,6 +1243,10 @@
             day: 'numeric'
         });
         
+        // Set default dates in filters
+        document.getElementById('filterDateFrom').value = '2025-10-01';
+        document.getElementById('filterDateTo').value = '2025-11-30';
+        
         // Toggle detailed view
         const detailedViewToggle = document.getElementById('detailedViewToggle');
         const detailedAnalysis = document.getElementById('detailedAnalysis');
@@ -935,8 +1256,9 @@
                 detailedAnalysis.style.display = 'block';
                 // Initialize charts when detailed view is shown
                 setTimeout(initializeCharts, 100);
-                // Initialize table sorting
+                // Initialize table sorting and filtering
                 setTimeout(initializeTableSorting, 150);
+                setTimeout(initializeAdvancedFilters, 200);
             } else {
                 detailedAnalysis.style.display = 'none';
             }
@@ -970,6 +1292,161 @@
             }
         }
         
+        // Advanced Filtering Functionality
+        function initializeAdvancedFilters() {
+            const applyFiltersBtn = document.getElementById('applyFilters');
+            const resetFiltersBtn = document.getElementById('resetFilters');
+            const tables = [
+                'expensesTable', 
+                'anadiyahExpensesTable', 
+                'khalaikExpensesTable'
+            ];
+            
+            // Apply filters function
+            function applyFilters() {
+                // Get filter values
+                const itemType = document.getElementById('filterItemType').value;
+                const itemName = document.getElementById('filterItemName').value.toLowerCase();
+                const dateFrom = document.getElementById('filterDateFrom').value;
+                const dateTo = document.getElementById('filterDateTo').value;
+                const farm = document.getElementById('filterFarm').value;
+                const amountFrom = parseFloat(document.getElementById('filterAmountFrom').value) || 0;
+                const amountTo = parseFloat(document.getElementById('filterAmountTo').value) || 9999999;
+                
+                let totalVisibleRows = 0;
+                let totalRows = 0;
+                
+                // Apply filters to each table
+                tables.forEach(tableId => {
+                    const table = document.getElementById(tableId);
+                    if (table) {
+                        const rows = table.querySelectorAll('tbody tr');
+                        totalRows += rows.length;
+                        
+                        rows.forEach(row => {
+                            const rowItemType = row.getAttribute('data-item-type') || 'other';
+                            const rowFarm = row.getAttribute('data-farm') || 'al-anadiyah';
+                            const rowDate = row.getAttribute('data-date');
+                            const rowAmount = parseFloat(row.getAttribute('data-amount')) || 0;
+                            const rowText = row.textContent.toLowerCase();
+                            
+                            // Check each filter condition
+                            let showRow = true;
+                            
+                            // Item type filter
+                            if (itemType !== 'all' && rowItemType !== itemType) {
+                                showRow = false;
+                            }
+                            
+                            // Item name filter
+                            if (itemName && !rowText.includes(itemName)) {
+                                showRow = false;
+                            }
+                            
+                            // Date filter
+                            if (rowDate) {
+                                if (dateFrom && rowDate < dateFrom) {
+                                    showRow = false;
+                                }
+                                if (dateTo && rowDate > dateTo) {
+                                    showRow = false;
+                                }
+                            }
+                            
+                            // Farm filter
+                            if (farm !== 'all' && rowFarm !== farm) {
+                                showRow = false;
+                            }
+                            
+                            // Amount filter
+                            if (rowAmount < amountFrom || rowAmount > amountTo) {
+                                showRow = false;
+                            }
+                            
+                            // Show or hide row
+                            if (showRow) {
+                                row.style.display = '';
+                                totalVisibleRows++;
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        });
+                    }
+                });
+                
+                // Update counters
+                document.getElementById('filteredRowsCount').textContent = totalVisibleRows;
+                document.getElementById('totalRowsCount').textContent = totalRows;
+                
+                // Update individual table counters
+                updateTableCounters();
+            }
+            
+            // Reset filters function
+            function resetFilters() {
+                // Reset filter inputs
+                document.getElementById('filterItemType').value = 'all';
+                document.getElementById('filterItemName').value = '';
+                document.getElementById('filterDateFrom').value = '2025-10-01';
+                document.getElementById('filterDateTo').value = '2025-11-30';
+                document.getElementById('filterFarm').value = 'all';
+                document.getElementById('filterAmountFrom').value = '';
+                document.getElementById('filterAmountTo').value = '';
+                
+                // Show all rows in all tables
+                tables.forEach(tableId => {
+                    const table = document.getElementById(tableId);
+                    if (table) {
+                        const rows = table.querySelectorAll('tbody tr');
+                        rows.forEach(row => {
+                            row.style.display = '';
+                        });
+                    }
+                });
+                
+                // Update counters
+                updateTableCounters();
+                
+                // Update main filter counter
+                const totalRows = document.querySelectorAll('#expensesTable tbody tr').length;
+                document.getElementById('filteredRowsCount').textContent = totalRows;
+                document.getElementById('totalRowsCount').textContent = totalRows;
+            }
+            
+            // Update table-specific counters
+            function updateTableCounters() {
+                const expenseTableRows = document.querySelectorAll('#expensesTable tbody tr:not([style*="display: none"])').length;
+                const anadiyahTableRows = document.querySelectorAll('#anadiyahExpensesTable tbody tr:not([style*="display: none"])').length;
+                const khalaikTableRows = document.querySelectorAll('#khalaikExpensesTable tbody tr:not([style*="display: none"])').length;
+                
+                document.getElementById('expenseRowsCount').textContent = expenseTableRows;
+                document.getElementById('anadiyahRowsCount').textContent = anadiyahTableRows;
+                document.getElementById('khalaikRowsCount').textContent = khalaikTableRows;
+            }
+            
+            // Add event listeners
+            applyFiltersBtn.addEventListener('click', applyFilters);
+            resetFiltersBtn.addEventListener('click', resetFilters);
+            
+            // Apply filters on Enter key in search fields
+            document.getElementById('filterItemName').addEventListener('keyup', function(event) {
+                if (event.key === 'Enter') {
+                    applyFilters();
+                }
+            });
+            
+            // Apply filters when date inputs change
+            document.getElementById('filterDateFrom').addEventListener('change', applyFilters);
+            document.getElementById('filterDateTo').addEventListener('change', applyFilters);
+            
+            // Apply filters on other select changes
+            document.getElementById('filterItemType').addEventListener('change', applyFilters);
+            document.getElementById('filterFarm').addEventListener('change', applyFilters);
+            
+            // Initial filter application
+            applyFilters();
+        }
+        
         // Table Sorting Functionality
         function initializeTableSorting() {
             // Initialize all sortable tables
@@ -996,9 +1473,6 @@
             const tbody = table.querySelector('tbody');
             const rows = Array.from(tbody.querySelectorAll('tr'));
             
-            // Store original rows for filtering
-            const originalRows = rows.map(row => row.cloneNode(true));
-            
             // Update rows counter
             function updateRowsCounter() {
                 const visibleRows = Array.from(tbody.querySelectorAll('tr')).filter(row => row.style.display !== 'none');
@@ -1008,11 +1482,11 @@
             // Initial counter update
             updateRowsCounter();
             
-            // Search functionality
+            // Search functionality (quick search)
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
                 
-                rows.forEach((row, index) => {
+                rows.forEach((row) => {
                     const cells = row.querySelectorAll('td');
                     let rowText = '';
                     
@@ -1058,43 +1532,46 @@
                     
                     this.setAttribute('data-sort', newSort);
                     
-                    // Sort the rows
-                    const sortedRows = Array.from(tbody.querySelectorAll('tr'))
-                        .filter(row => row.style.display !== 'none')
-                        .sort((rowA, rowB) => {
-                            const cellA = rowA.querySelectorAll('td')[columnIndex];
-                            const cellB = rowB.querySelectorAll('td')[columnIndex];
-                            
-                            // Get sort value from data attribute if available
-                            let valueA = cellA.getAttribute('data-sort-value') || cellA.textContent;
-                            let valueB = cellB.getAttribute('data-sort-value') || cellB.textContent;
-                            
-                            // Convert to numbers if possible
-                            const numA = parseFloat(valueA);
-                            const numB = parseFloat(valueB);
-                            
-                            if (!isNaN(numA) && !isNaN(numB)) {
-                                valueA = numA;
-                                valueB = numB;
-                            }
-                            
-                            // Sort based on direction
-                            if (newSort === 'asc') {
-                                return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
-                            } else {
-                                return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
-                            }
-                        });
+                    // Sort the visible rows
+                    const visibleRows = Array.from(tbody.querySelectorAll('tr'))
+                        .filter(row => row.style.display !== 'none');
                     
-                    // Clear and re-add sorted rows
-                    tbody.innerHTML = '';
+                    const sortedRows = visibleRows.sort((rowA, rowB) => {
+                        const cellA = rowA.querySelectorAll('td')[columnIndex];
+                        const cellB = rowB.querySelectorAll('td')[columnIndex];
+                        
+                        // Get sort value from data attribute if available
+                        let valueA = cellA.getAttribute('data-sort-value') || cellA.textContent;
+                        let valueB = cellB.getAttribute('data-sort-value') || cellB.textContent;
+                        
+                        // Convert to numbers if possible
+                        const numA = parseFloat(valueA);
+                        const numB = parseFloat(valueB);
+                        
+                        if (!isNaN(numA) && !isNaN(numB)) {
+                            valueA = numA;
+                            valueB = numB;
+                        }
+                        
+                        // Sort based on direction
+                        if (newSort === 'asc') {
+                            return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+                        } else {
+                            return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
+                        }
+                    });
+                    
+                    // Reorder only visible rows
+                    visibleRows.forEach(row => row.remove());
                     sortedRows.forEach(row => tbody.appendChild(row));
                     
-                    // Add back hidden rows
-                    rows.forEach(row => {
-                        if (row.style.display === 'none') {
-                            tbody.appendChild(row);
-                        }
+                    // Add back hidden rows at the end
+                    const hiddenRows = Array.from(tbody.querySelectorAll('tr'))
+                        .filter(row => row.style.display === 'none');
+                    
+                    hiddenRows.forEach(row => {
+                        row.remove();
+                        tbody.appendChild(row);
                     });
                 });
             });
