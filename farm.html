@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحليل المزارع - العنادية والخلايق</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        :root {
+            --primary-color: #2E7D32;
+            --secondary-color: #388E3C;
+            --accent-color: #43A047;
+            --danger-color: #D32F2F;
+            --warning-color: #F57C00;
+            --info-color: #0288D1;
+            --light-color: #F5F5F5;
+            --dark-color: #1B5E20;
+            --text-color: #333;
+            --border-color: #ddd;
+            --al-anadiyah: #2E7D32;
+            --al-khalaik: #0288D1;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+        }
+        
+        .date-display {
+            font-size: 1.1rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+        }
+        
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-header {
+            background-color: var(--light-color);
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h3 {
+            color: var(--dark-color);
+            font-size: 1.3rem;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Summary Cards */
+        .summary-card {
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+        
+        .summary-label {
+            color: #666;
+            font-size: 1rem;
+        }
+        
+        .profit {
+            color: var(--primary-color);
+        }
+        
+        .revenue {
+            color: var(--info-color);
+        }
+        
+        .expenses {
+            color: var(--danger-color);
+        }
+        
+        /* Chart Containers */
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            font-weight: 600;
+            padding: 15px;
+            text-align: right;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        /* Table Sorting Styles */
+        .sortable-header {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+        
+        .sortable-header:hover {
+            background-color: rgba(46, 125, 50, 0.1) !important;
+        }
+        
+        .sortable-header i {
+            margin-right: 5px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .sortable-header.sort-asc i,
+        .sortable-header.sort-desc i {
+            opacity: 1;
+        }
+        
+        .sortable-header.sort-asc i {
+            transform: rotate(180deg);
+        }
+        
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .table-search {
+            flex-grow: 1;
+            max-width: 300px;
+        }
+        
+        .table-search input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .table-search input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+        }
+        
+        .rows-counter {
+            background-color: var(--light-color);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        table tfoot {
+            background-color: rgba(46, 125, 50, 0.05);
+            font-weight: bold;
+        }
+        
+        table tfoot td {
+            border-top: 2px solid var(--border-color);
+            border-bottom: none;
+        }
+        
+        /* Farm Tabs */
+        .farm-tabs {
+            display: flex;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 30px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .farm-tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .farm-tab.active {
+            background-color: rgba(46, 125, 50, 0.1);
+            border-bottom: 3px solid var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .farm-tab:hover:not(.active) {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+        
+        /* Farm Indicators */
+        .farm-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+        
+        .indicator-anadiyah {
+            background-color: var(--al-anadiyah);
+        }
+        
+        .indicator-khalaik {
+            background-color: var(--al-khalaik);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 25px 0;
+            margin-top: 50px;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .farm-tabs {
+                flex-direction: column;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .table-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .table-search {
+                max-width: 100%;
+            }
+        }
+        
+        /* Custom utility classes */
+        .text-center { text-align: center; }
+        .mb-20 { margin-bottom: 20px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-10 { margin-bottom: 10px; }
+        .flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .align-center { align-items: center; }
+        
+        /* Comparison bars */
+        .comparison-bar {
+            height: 30px;
+            background-color: #eee;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            border-radius: 15px;
+            transition: width 1s ease;
+        }
+        
+        .bar-label {
+            position: absolute;
+            top: 0;
+            right: 10px;
+            line-height: 30px;
+            color: white;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        /* Stat cards */
+        .stat-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card.anadiyah {
+            background-color: rgba(46, 125, 50, 0.1);
+            border-right: 4px solid var(--al-anadiyah);
+        }
+        
+        .stat-card.khalaik {
+            background-color: rgba(2, 136, 209, 0.1);
+            border-right: 4px solid var(--al-khalaik);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin: 0 10px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-tractor"></i>
+                    <h1>لوحة تحليل المزارع</h1>
+                </div>
+                <div class="date-display">
+                    <i class="far fa-calendar-alt"></i>
+                    <span id="current-date"></span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Farm Tabs -->
+        <div class="farm-tabs">
+            <div class="farm-tab active" data-farm="both">
+                <i class="fas fa-chart-pie"></i>
+                <h3>نظرة عامة على مزرعه الخلايق و العناديه لشهر أكتوبر - نوفمبر</h3>
+            </div>
+        </div>
+        
+        <!-- Summary Cards -->
+        <div class="dashboard-grid">
+            <div class="card summary-card">
+                <div class="card-header">
+                    <h3>إجمالي الإيرادات</h3>
+                    <i class="fas fa-money-bill-wave revenue"></i>
+                </div>
+                <div class="card-body">
+                    <div class="summary-value revenue">308,300 ر.س</div>
+                    <p class="summary-label">إيرادات المزرعتين معاً</p>
+                    
+                    <div class="stat-card anadiyah">
+                        <div>
+                            <span class="farm-indicator indicator-anadiyah"></span>
+                            <strong>العنادية:</strong>
+                        </div>
+                        <div class="stat-value">213,300 ر.س</div>
+                    </div>
+                    
+                    <div class="stat-card khalaik">
+                        <div>
+                            <span class="farm-indicator indicator-khalaik"></span>
+                            <strong>الخلايق:</strong>
+                        </div>
+                        <div class="stat-value">95,000 ر.س</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card summary-card">
+                <div class="card-header">
+                    <h3>إجمالي المصروفات</h3>
+                    <i class="fas fa-file-invoice-dollar expenses"></i>
+                </div>
+                <div class="card-body">
+                    <div class="summary-value expenses">250,880 ر.س</div>
+                    <p class="summary-label">مصروفات المزرعتين معاً</p>
+                    
+                    <div class="stat-card anadiyah">
+                        <div>
+                            <span class="farm-indicator indicator-anadiyah"></span>
+                            <strong>العنادية:</strong>
+                        </div>
+                        <div class="stat-value">163,915 ر.س</div>
+                    </div>
+                    
+                    <div class="stat-card khalaik">
+                        <div>
+                            <span class="farm-indicator indicator-khalaik"></span>
+                            <strong>الخلايق:</strong>
+                        </div>
+                        <div class="stat-value">86,965 ر.س</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card summary-card">
+                <div class="card-header">
+                    <h3>صافي الربح</h3>
+                    <i class="fas fa-chart-line profit"></i>
+                </div>
+                <div class="card-body">
+                    <div class="summary-value profit">57,420 ر.س</div>
+                    <p class="summary-label">صافي ربح المزرعتين معاً</p>
+                    
+                    <div class="stat-card anadiyah">
+                        <div>
+                            <span class="farm-indicator indicator-anadiyah"></span>
+                            <strong>العنادية:</strong>
+                        </div>
+                        <div class="stat-value">49,385 ر.س</div>
+                    </div>
+                    
+                    <div class="stat-card khalaik">
+                        <div>
+                            <span class="farm-indicator indicator-khalaik"></span>
+                            <strong>الخلايق:</strong>
+                        </div>
+                        <div class="stat-value">8,035 ر.س</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card summary-card">
+                <div class="card-header">
+                    <h3>هامش الربح</h3>
+                    <i class="fas fa-percentage profit"></i>
+                </div>
+                <div class="card-body">
+                    <div class="summary-value profit">18.6%</div>
+                    <p class="summary-label">متوسط هامش الربح للمزرعتين</p>
+                    
+                    <div class="mb-10">
+                        <div class="flex justify-between mb-5">
+                            <span><span class="farm-indicator indicator-anadiyah"></span> العنادية</span>
+                            <span>23.1%</span>
+                        </div>
+                        <div class="comparison-bar">
+                            <div class="bar-fill" style="width: 23.1%; background-color: var(--al-anadiyah);"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-10">
+                        <div class="flex justify-between mb-5">
+                            <span><span class="farm-indicator indicator-khalaik"></span> الخلايق</span>
+                            <span>8.5%</span>
+                        </div>
+                        <div class="comparison-bar">
+                            <div class="bar-fill" style="width: 8.5%; background-color: var(--al-khalaik);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toggle for detailed view -->
+        <div class="toggle-container">
+            <span>عرض مبسط</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="detailedViewToggle">
+                <span class="toggle-slider"></span>
+            </label>
+            <span>عرض مفصل</span>
+        </div>
+        
+        <!-- Detailed Analysis Section (Initially Hidden) -->
+        <div id="detailedAnalysis" style="display: none;">
+            <!-- Charts and Detailed Analysis -->
+            <div class="dashboard-grid">
+                <!-- Revenue Breakdown -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>توزيع الإيرادات - العنادية</h3>
+                        <i class="fas fa-chart-pie revenue"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Expense Categories -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>توزيع المصروفات - العنادية</h3>
+                        <i class="fas fa-chart-bar expenses"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="expensesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Profit Trend -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>مقارنة الأداء</h3>
+                        <i class="fas fa-chart-line profit"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="profitChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Expense Comparison -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>مقارنة أنواع المصروفات</h3>
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="expenseComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detailed Tables -->
+            <div class="card mb-20">
+                <div class="card-header">
+                    <h3>تحليل مصروفات المزارع بالتفصيل</h3>
+                    <i class="fas fa-table"></i>
+                </div>
+                <div class="card-body">
+                    <div class="table-controls">
+                        <div class="table-search">
+                            <input type="text" id="expenseSearch" placeholder="بحث في المصروفات...">
+                        </div>
+                        <div class="rows-counter">
+                            عرض <span id="expenseRowsCount">6</span> من 6 صفوف
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="expensesTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable-header" data-column="0" data-sort="asc">
+                                        <i class="fas fa-sort"></i> نوع المصروف
+                                    </th>
+                                    <th class="sortable-header" data-column="1" data-sort="none">
+                                        <i class="fas fa-sort"></i> العنادية (ر.س)
+                                    </th>
+                                    <th class="sortable-header" data-column="2" data-sort="none">
+                                        <i class="fas fa-sort"></i> الخلايق (ر.س)
+                                    </th>
+                                    <th class="sortable-header" data-column="3" data-sort="none">
+                                        <i class="fas fa-sort"></i> الإجمالي (ر.س)
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>الأعلاف والبرسيم</strong></td>
+                                    <td data-sort-value="21775">21,775 ر.س</td>
+                                    <td data-sort-value="58410">58,410 ر.س</td>
+                                    <td data-sort-value="80185">80,185 ر.س</td>
+                                </tr>
+                                <tr>
+                                    <td>الرواتب والأجور</td>
+                                    <td data-sort-value="5300">5,300 ر.س</td>
+                                    <td data-sort-value="2800">2,800 ر.س</td>
+                                    <td data-sort-value="8100">8,100 ر.س</td>
+                                </tr>
+                                <tr>
+                                    <td>قطع الغيار والصيانة</td>
+                                    <td data-sort-value="57158">57,158 ر.س</td>
+                                    <td data-sort-value="4508">4,508 ر.س</td>
+                                    <td data-sort-value="61666">61,666 ر.س</td>
+                                </tr>
+                                <tr>
+                                    <td>الكهرباء والسباكة</td>
+                                    <td data-sort-value="7148">7,148 ر.س</td>
+                                    <td data-sort-value="7241">7,241 ر.س</td>
+                                    <td data-sort-value="14389">14,389 ر.س</td>
+                                </tr>
+                                <tr>
+                                    <td>المحروقات والزيوت</td>
+                                    <td data-sort-value="780">780 ر.س</td>
+                                    <td data-sort-value="4765">4,765 ر.س</td>
+                                    <td data-sort-value="5545">5,545 ر.س</td>
+                                </tr>
+                                <tr>
+                                    <td>التموينات والإعاشة</td>
+                                    <td data-sort-value="1006">1,006 ر.س</td>
+                                    <td data-sort-value="5985">5,985 ر.س</td>
+                                    <td data-sort-value="6991">6,991 ر.س</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td><strong>الإجمالي</strong></td>
+                                    <td>163,915 ر.س</td>
+                                    <td>86,965 ر.س</td>
+                                    <td>250,880 ر.س</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Top Expenses Comparison -->
+            <div class="dashboard-grid">
+                <!-- Top Expenses - Al-Anadiyah -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>أكبر البنود المصروفات - العنادية</h3>
+                        <i class="fas fa-exclamation-triangle" style="color: var(--warning-color);"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-controls">
+                            <div class="table-search">
+                                <input type="text" id="anadiyahSearch" placeholder="بحث في العنادية...">
+                            </div>
+                            <div class="rows-counter">
+                                عرض <span id="anadiyahRowsCount">3</span> من 3 صفوف
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="anadiyahExpensesTable">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable-header" data-column="0" data-sort="asc">
+                                            <i class="fas fa-sort"></i> البند
+                                        </th>
+                                        <th class="sortable-header" data-column="1" data-sort="none">
+                                            <i class="fas fa-sort"></i> المبلغ
+                                        </th>
+                                        <th class="sortable-header" data-column="2" data-sort="none">
+                                            <i class="fas fa-sort"></i> النسبة
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>غطاس 4 بوصة</td>
+                                        <td data-sort-value="53584">53,584 ر.س</td>
+                                        <td data-sort-value="32.7">32.7%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>إصلاح خزان الماء</td>
+                                        <td data-sort-value="45000">45,000 ر.س</td>
+                                        <td data-sort-value="27.5">27.5%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>قطع غيار وصيانة</td>
+                                        <td data-sort-value="57158">57,158 ر.س</td>
+                                        <td data-sort-value="34.9">34.9%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top Expenses - Al-Khalaik -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>أكبر البنود المصروفات - الخلايق</h3>
+                        <i class="fas fa-exclamation-triangle" style="color: var(--warning-color);"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-controls">
+                            <div class="table-search">
+                                <input type="text" id="khalaikSearch" placeholder="بحث في الخلايق...">
+                            </div>
+                            <div class="rows-counter">
+                                عرض <span id="khalaikRowsCount">3</span> من 3 صفوف
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="khalaikExpensesTable">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable-header" data-column="0" data-sort="asc">
+                                            <i class="fas fa-sort"></i> البند
+                                        </th>
+                                        <th class="sortable-header" data-column="1" data-sort="none">
+                                            <i class="fas fa-sort"></i> المبلغ
+                                        </th>
+                                        <th class="sortable-header" data-column="2" data-sort="none">
+                                            <i class="fas fa-sort"></i> النسبة
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>الشعير والسماد</td>
+                                        <td data-sort-value="51600">51,600 ر.س</td>
+                                        <td data-sort-value="59.3">59.3%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>الكهرباء والسباكة</td>
+                                        <td data-sort-value="7241">7,241 ر.س</td>
+                                        <td data-sort-value="8.3">8.3%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>التموينات والإعاشة</td>
+                                        <td data-sort-value="5985">5,985 ر.س</td>
+                                        <td data-sort-value="6.9">6.9%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Key Performance Indicators -->
+            <div class="card mb-20">
+                <div class="card-header">
+                    <h3>مؤشرات الأداء الرئيسية</h3>
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="card-body">
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="summary-value" style="color: var(--al-anadiyah);">23.1%</div>
+                                <p class="summary-label">هامش ربح العنادية</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="summary-value" style="color: var(--al-khalaik);">8.5%</div>
+                                <p class="summary-label">هامش ربح الخلايق</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="summary-value" style="color: var(--info-color);">4.9%</div>
+                                <p class="summary-label">نسبة الرواتب إلى الإيرادات (العنادية)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <div class="summary-value" style="color: var(--warning-color);">2.9%</div>
+                                <p class="summary-label">نسبة الرواتب إلى الإيرادات (الخلايق)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <h3>لوحة تحليل المزارع 2025</h3>
+                    <p>الفترة: أكتوبر - نوفمبر 2025</p>
+                </div>
+                <div>
+                    <p>إجمالي الإيرادات: 308,300 ر.س</p>
+                    <p>إجمالي المصروفات: 250,880 ر.س</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // Set current date
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('ar-SA', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Toggle detailed view
+        const detailedViewToggle = document.getElementById('detailedViewToggle');
+        const detailedAnalysis = document.getElementById('detailedAnalysis');
+        
+        detailedViewToggle.addEventListener('change', function() {
+            if (this.checked) {
+                detailedAnalysis.style.display = 'block';
+                // Initialize charts when detailed view is shown
+                setTimeout(initializeCharts, 100);
+                // Initialize table sorting
+                setTimeout(initializeTableSorting, 150);
+            } else {
+                detailedAnalysis.style.display = 'none';
+            }
+        });
+        
+        // Farm Tabs Functionality
+        document.querySelectorAll('.farm-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.farm-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Filter data based on selected farm
+                const farm = this.getAttribute('data-farm');
+                filterDashboardData(farm);
+            });
+        });
+        
+        function filterDashboardData(farm) {
+            // Update farm name in dashboard if needed
+            if (farm === 'al-anadiyah') {
+                document.querySelector('header h1').textContent = 'لوحة تحليل العنادية 2025';
+            } else if (farm === 'al-khalaik') {
+                document.querySelector('header h1').textContent = 'لوحة تحليل الخلايق 2025';
+            } else {
+                document.querySelector('header h1').textContent = 'لوحة تحليل المزارع';
+            }
+        }
+        
+        // Table Sorting Functionality
+        function initializeTableSorting() {
+            // Initialize all sortable tables
+            const tables = [
+                {id: 'expensesTable', searchId: 'expenseSearch', countId: 'expenseRowsCount'},
+                {id: 'anadiyahExpensesTable', searchId: 'anadiyahSearch', countId: 'anadiyahRowsCount'},
+                {id: 'khalaikExpensesTable', searchId: 'khalaikSearch', countId: 'khalaikRowsCount'}
+            ];
+            
+            tables.forEach(tableConfig => {
+                const table = document.getElementById(tableConfig.id);
+                const searchInput = document.getElementById(tableConfig.searchId);
+                const rowsCountElement = document.getElementById(tableConfig.countId);
+                
+                if (table && searchInput && rowsCountElement) {
+                    // Initialize sorting for this table
+                    initTableSorting(table, searchInput, rowsCountElement);
+                }
+            });
+        }
+        
+        function initTableSorting(table, searchInput, rowsCountElement) {
+            const headers = table.querySelectorAll('.sortable-header');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Store original rows for filtering
+            const originalRows = rows.map(row => row.cloneNode(true));
+            
+            // Update rows counter
+            function updateRowsCounter() {
+                const visibleRows = Array.from(tbody.querySelectorAll('tr')).filter(row => row.style.display !== 'none');
+                rowsCountElement.textContent = visibleRows.length;
+            }
+            
+            // Initial counter update
+            updateRowsCounter();
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                rows.forEach((row, index) => {
+                    const cells = row.querySelectorAll('td');
+                    let rowText = '';
+                    
+                    cells.forEach(cell => {
+                        rowText += cell.textContent.toLowerCase() + ' ';
+                    });
+                    
+                    if (rowText.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                updateRowsCounter();
+            });
+            
+            // Sorting functionality
+            headers.forEach(header => {
+                header.addEventListener('click', function() {
+                    const columnIndex = parseInt(this.getAttribute('data-column'));
+                    const currentSort = this.getAttribute('data-sort');
+                    
+                    // Reset all headers
+                    headers.forEach(h => {
+                        h.setAttribute('data-sort', 'none');
+                        h.classList.remove('sort-asc', 'sort-desc');
+                        const icon = h.querySelector('i');
+                        icon.className = 'fas fa-sort';
+                    });
+                    
+                    // Determine new sort direction
+                    let newSort = 'asc';
+                    if (currentSort === 'asc') {
+                        newSort = 'desc';
+                        this.classList.add('sort-desc');
+                        this.querySelector('i').className = 'fas fa-sort-down';
+                    } else {
+                        newSort = 'asc';
+                        this.classList.add('sort-asc');
+                        this.querySelector('i').className = 'fas fa-sort-up';
+                    }
+                    
+                    this.setAttribute('data-sort', newSort);
+                    
+                    // Sort the rows
+                    const sortedRows = Array.from(tbody.querySelectorAll('tr'))
+                        .filter(row => row.style.display !== 'none')
+                        .sort((rowA, rowB) => {
+                            const cellA = rowA.querySelectorAll('td')[columnIndex];
+                            const cellB = rowB.querySelectorAll('td')[columnIndex];
+                            
+                            // Get sort value from data attribute if available
+                            let valueA = cellA.getAttribute('data-sort-value') || cellA.textContent;
+                            let valueB = cellB.getAttribute('data-sort-value') || cellB.textContent;
+                            
+                            // Convert to numbers if possible
+                            const numA = parseFloat(valueA);
+                            const numB = parseFloat(valueB);
+                            
+                            if (!isNaN(numA) && !isNaN(numB)) {
+                                valueA = numA;
+                                valueB = numB;
+                            }
+                            
+                            // Sort based on direction
+                            if (newSort === 'asc') {
+                                return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+                            } else {
+                                return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
+                            }
+                        });
+                    
+                    // Clear and re-add sorted rows
+                    tbody.innerHTML = '';
+                    sortedRows.forEach(row => tbody.appendChild(row));
+                    
+                    // Add back hidden rows
+                    rows.forEach(row => {
+                        if (row.style.display === 'none') {
+                            tbody.appendChild(row);
+                        }
+                    });
+                });
+            });
+        }
+        
+        // Initialize charts only when needed
+        function initializeCharts() {
+            // Revenue Chart (Pie Chart) - Al-Anadiyah
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(revenueCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['إيراد الأغنام', 'إيراد بيع غزلان', 'إيراد الأبقار', 'بيع وبر', 'بيع خروف'],
+                    datasets: [{
+                        data: [149000, 50000, 8000, 5000, 1300],
+                        backgroundColor: [
+                            '#2E7D32',
+                            '#4CAF50',
+                            '#81C784',
+                            '#A5D6A7',
+                            '#C8E6C9'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'left',
+                            rtl: true,
+                            labels: {
+                                font: {
+                                    family: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += new Intl.NumberFormat('ar-SA').format(context.raw) + ' ر.س';
+                                    label += ` (${((context.raw / 213300) * 100).toFixed(1)}%)`;
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Expenses Chart (Bar Chart) - Al-Anadiyah
+            const expensesCtx = document.getElementById('expensesChart').getContext('2d');
+            const expensesChart = new Chart(expensesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['البرسيم', 'الشعير والأعلاف', 'الرواتب', 'قطع الغيار', 'الكهرباء', 'التموينات', 'المحروقات'],
+                    datasets: [{
+                        label: 'المبلغ (ر.س)',
+                        data: [13270, 8505, 5300, 57158, 7148, 1006, 780],
+                        backgroundColor: '#D32F2F',
+                        borderColor: '#B71C1C',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('ar-SA').format(value) + ' ر.س';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${new Intl.NumberFormat('ar-SA').format(context.raw)} ر.س`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Profit Chart (Line Chart)
+            const profitCtx = document.getElementById('profitChart').getContext('2d');
+            const profitChart = new Chart(profitCtx, {
+                type: 'line',
+                data: {
+                    labels: ['الإيرادات', 'المصروفات', 'صافي الربح'],
+                    datasets: [
+                        {
+                            label: 'العنادية',
+                            data: [213300, 163915, 49385],
+                            borderColor: '#2E7D32',
+                            backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                            tension: 0.3,
+                            fill: false
+                        },
+                        {
+                            label: 'الخلايق',
+                            data: [95000, 86965, 8035],
+                            borderColor: '#0288D1',
+                            backgroundColor: 'rgba(2, 136, 209, 0.1)',
+                            tension: 0.3,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('ar-SA').format(value) + ' ر.س';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${new Intl.NumberFormat('ar-SA').format(context.raw)} ر.س`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Expense Comparison Chart
+            const expenseComparisonCtx = document.getElementById('expenseComparisonChart').getContext('2d');
+            const expenseComparisonChart = new Chart(expenseComparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['الأعلاف', 'الرواتب', 'قطع الغيار', 'الكهرباء', 'المحروقات', 'التموينات'],
+                    datasets: [
+                        {
+                            label: 'العنادية',
+                            data: [21775, 5300, 57158, 7148, 780, 1006],
+                            backgroundColor: '#2E7D32',
+                        },
+                        {
+                            label: 'الخلايق',
+                            data: [58410, 2800, 4508, 7241, 4765, 5985],
+                            backgroundColor: '#0288D1',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return new Intl.NumberFormat('ar-SA').format(value) + ' ر.س';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${new Intl.NumberFormat('ar-SA').format(context.raw)} ر.س`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Animate comparison bars on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.querySelectorAll('.bar-fill').forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 300);
+                });
+            }, 500);
+        });
+    </script>
+</body>
+</html>
